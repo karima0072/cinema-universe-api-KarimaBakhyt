@@ -169,14 +169,27 @@ cinema-universe-api/
 
 ---
 
-##  Screenshots
+## Screenshots
 
-Included screenshots demonstrate:
-- Successful CRUD operations
-- Database state in pgAdmin
-- Exception handling output
-- GitHub repository structure
+### 1. Database schema creation
+This screenshot shows the creation of the relational database schema with primary and foreign keys.
+![Database Schema](docs/screenshots/screenshot1.png)
 
+### 2. Sample SQL INSERT statements
+This screenshot demonstrates inserting initial data into the database tables.
+![SQL Inserts](docs/screenshots/screenshot2.png)
+
+### 3. Project structure (multi-layer architecture)
+This screenshot shows the project structure with controller, service, repository, model, exception, and utils layers.
+![Project Structure](docs/screenshots/screenshot9.png)
+
+### 4. Application output and CRUD operations
+This screenshot shows the console output demonstrating CRUD operations, polymorphism, and exception handling.
+![Application Output](docs/screenshots/screenshot10.png)
+
+## UML Diagram
+
+![UML Diagram](docs/uml/uml-diagram%20(2).png)
 ---
 
 ##  Reflection
