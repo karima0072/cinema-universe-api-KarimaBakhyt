@@ -67,8 +67,8 @@ This demonstrates composition in the domain model.
 
 ##  Interfaces
 
-The project follows interface-based design principles by separating responsibilities between layers and enforcing method contracts in service and model logic.
-
+- PricedItem defines price-related behavior for tickets
+- Validatable enforces input validation rules in domain models
 ---
 
 ##  Database Design (PostgreSQL)
