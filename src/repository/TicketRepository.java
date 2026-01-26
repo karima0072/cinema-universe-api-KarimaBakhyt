@@ -77,7 +77,7 @@ public class TicketRepository {
 
 
     public void update(int id, Ticket updated) {
-        // Проверим, что существует
+        
         getById(id);
 
         String sql = "UPDATE tickets " +
@@ -125,7 +125,7 @@ public class TicketRepository {
 
         if ("VIP".equalsIgnoreCase(type)) {
             double vipFee = fin - base;
-            if (vipFee < 0) vipFee = 0; // на всякий случай
+            if (vipFee < 0) vipFee = 0;
             return new VipTicket(ticketId, customer, movieId, base, vipFee);
         } else {
             return new RegularTicket(ticketId, customer, movieId, base);
