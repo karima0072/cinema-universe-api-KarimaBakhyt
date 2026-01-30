@@ -1,5 +1,6 @@
 package repository;
 
+import repository.interfaces.TicketRepository;
 import exception.DatabaseOperationException;
 import exception.ResourceNotFoundException;
 import model.Customer;
@@ -11,15 +12,15 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TicketRepository {
+public class JdbcTicketRepository implements TicketRepository {
 
     private final Connection connection;
 
-    public TicketRepository(Connection connection) {
+    public JdbcTicketRepository(Connection connection) {
         this.connection = connection;
     }
 
-
+    @Override
     public void create(Ticket ticket) {
         String sql = "INSERT INTO tickets (customer_id, movie_id, type, base_price, final_price) " +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -37,7 +38,7 @@ public class TicketRepository {
         }
     }
 
-
+    @Override
     public List<Ticket> getAll() {
         String sql = "SELECT ticket_id, customer_id, movie_id, type, base_price, final_price FROM tickets";
         List<Ticket> list = new ArrayList<>();
@@ -55,13 +56,13 @@ public class TicketRepository {
         }
     }
 
-
-    public Ticket getById(int id) {
+    @Override
+    public Ticket getById(Integer id) {
         String sql = "SELECT ticket_id, customer_id, movie_id, type, base_price, final_price " +
                 "FROM tickets WHERE ticket_id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
+            ps.setInt(1, id); // Integer auto-unboxing -> int
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
@@ -75,9 +76,9 @@ public class TicketRepository {
         }
     }
 
-
-    public void update(int id, Ticket updated) {
-        
+    @Override
+    public void update(Integer id, Ticket updated) {
+        // Проверим, что существует
         getById(id);
 
         String sql = "UPDATE tickets " +
@@ -90,7 +91,7 @@ public class TicketRepository {
             ps.setString(3, updated.getType());
             ps.setDouble(4, updated.getBasePrice());
             ps.setDouble(5, updated.getFinalPrice());
-            ps.setInt(6, id);
+            ps.setInt(6, id); // Integer -> int
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -98,20 +99,41 @@ public class TicketRepository {
         }
     }
 
-
-    public void deleteById(int id) {
+    @Override
+    public void deleteById(Integer id) {
         getById(id);
 
         String sql = "DELETE FROM tickets WHERE ticket_id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
+            ps.setInt(1, id); // Integer -> int
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseOperationException("Failed to delete ticket id=" + id, e);
         }
     }
 
+    @Override
+    public boolean existsByCustomerMovieType(int customerId, int movieId, String type) {
+        String sql = """
+            SELECT COUNT(*)
+            FROM tickets
+            WHERE customer_id = ? AND movie_id = ? AND type = ?
+            """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            ps.setInt(2, movieId);
+            ps.setString(3, type);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseOperationException("Failed to check duplicate ticket", e);
+        }
+    }
 
     private Ticket mapRowToTicket(ResultSet rs) throws SQLException {
         int ticketId = rs.getInt("ticket_id");

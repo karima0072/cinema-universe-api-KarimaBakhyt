@@ -1,11 +1,12 @@
 package service;
 
+import repository.interfaces.TicketRepository;
 import exception.DuplicateResourceException;
 import exception.InvalidInputException;
 import exception.ResourceNotFoundException;
 import model.Customer;
 import model.Ticket;
-import repository.TicketRepository;
+import repository.interfaces.TicketRepository;
 
 import java.util.List;
 
@@ -22,6 +23,21 @@ public class TicketService {
         validateTicket(ticket);
         preventDuplicate(ticket);
         ticketRepository.create(ticket);
+    }
+    public Ticket getMostExpensiveTicket() {
+        List<Ticket> tickets = ticketRepository.getAll();
+
+        if (tickets.isEmpty()) {
+            throw new ResourceNotFoundException("No tickets found");
+        }
+
+        Ticket max = tickets.get(0);
+        for (Ticket t : tickets) {
+            if (t.getFinalPrice() > max.getFinalPrice()) {
+                max = t;
+            }
+        }
+        return max;
     }
 
 
@@ -54,6 +70,7 @@ public class TicketService {
 
         ticketRepository.deleteById(id);
     }
+
 
 
 

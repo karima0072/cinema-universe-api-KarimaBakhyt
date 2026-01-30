@@ -1,6 +1,6 @@
 package model;
 
-public abstract class Ticket {
+public abstract class Ticket implements Validatable, PricedItem {
 
     protected int id;
     protected Customer customer;

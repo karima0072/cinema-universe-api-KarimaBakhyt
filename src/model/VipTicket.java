@@ -9,7 +9,9 @@ public class VipTicket extends Ticket {
         this.vipFee = vipFee;
     }
 
-    public double getVipFee() { return vipFee; }
+    public double getVipFee() {
+        return vipFee;
+    }
 
     @Override
     public String getType() {
@@ -19,5 +21,15 @@ public class VipTicket extends Ticket {
     @Override
     public double getFinalPrice() {
         return basePrice + vipFee;
+    }
+
+    @Override
+    public void validate() {
+        if (basePrice <= 0) {
+            throw new IllegalArgumentException("Base price must be positive");
+        }
+        if (vipFee < 0) {
+            throw new IllegalArgumentException("VIP fee must be >= 0");
+        }
     }
 }

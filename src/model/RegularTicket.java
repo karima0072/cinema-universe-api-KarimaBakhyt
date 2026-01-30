@@ -15,4 +15,10 @@ public class RegularTicket extends Ticket {
     public double getFinalPrice() {
         return basePrice;
     }
+    @Override
+    public void validate() {
+        if (basePrice <= 0) {
+            throw new IllegalArgumentException("ticket price must be positive");
+        }
+    }
 }
