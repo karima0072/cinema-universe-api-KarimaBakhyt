@@ -1,25 +1,64 @@
-#  Cinema Universe API  
-*Assignment 3 – Advanced OOP API Project (JDBC + Exception Handling)*
+# Cinema Universe API
+*Assignment 4 – SOLID Architecture & Advanced OOP Features (Refactoring Project)*  
+Project Milestone 2 (builds on Assignment 3)
 
 ---
 
-##  Project Overview
+## Project Overview
+Cinema Universe API is a console-based Java application that simulates a cinema ticket management system.
+This project is a refactored version of Assignment 3 and demonstrates a SOLID-compliant multi-layer
+architecture with advanced Object-Oriented Programming features.
 
-Cinema Universe API is a console-based Java application that simulates a cinema ticket management system.  
-The project demonstrates advanced Object-Oriented Programming (OOP) principles, JDBC database interaction, and a clean multi-layer architecture.
-
-The application allows:
-- Creating different types of tickets
-- Storing and retrieving data from a PostgreSQL database
-- Applying business rules and validation
-- Handling errors using a custom exception hierarchy
+The project focuses on clean architecture, maintainability, and extensibility while preserving
+JDBC-based database interaction.
 
 ---
 
-##  OOP Design
+## Learning Goals
+- Apply SOLID principles in a real Java project
+- Refactor an existing project into a clean layered architecture
+- Use advanced Java features (Generics, Lambdas, Reflection)
+- Improve documentation and project structure
 
-###  Abstract Base Class
+---
 
+## SOLID Principles Documentation
+
+### SRP – Single Responsibility Principle
+Each class has a single responsibility:
+- Main – application demonstration and CLI output only
+- TicketService – business logic, validation, and exception handling
+- JdbcTicketRepository – database access using JDBC
+- SortingUtils – sorting logic only
+- ReflectionUtils – runtime inspection only
+- exception package – custom exception hierarchy
+
+### OCP – Open/Closed Principle
+The system is open for extension but closed for modification:
+- Ticket is an abstract base class
+- New ticket types can be added without modifying existing service or repository logic
+
+### LSP – Liskov Substitution Principle
+- RegularTicket and VipTicket correctly extend Ticket
+- Subclasses behave correctly when used via Ticket references
+- Polymorphism works without breaking system behavior
+
+### ISP – Interface Segregation Principle
+Small, focused interfaces:
+- Validatable<T> – validation behavior
+- PricedItem – pricing behavior  
+Interfaces do not force unnecessary method implementations.
+
+### DIP – Dependency Inversion Principle
+- TicketService depends on TicketRepository interface
+- Repository implementation is injected via constructor
+- High-level modules do not depend on low-level implementations
+
+---
+
+## OOP Design
+
+### Abstract Base Class
 *Ticket (abstract class)*
 
 Fields:
@@ -33,176 +72,229 @@ Abstract methods:
 - getFinalPrice()
 
 Concrete method:
-- shortInfo() – returns a formatted string describing the ticket
+- shortInfo() – returns formatted ticket description
+
+Encapsulation:
+- All fields are private
+- Access controlled via getters/setters
+
+### Subclasses
+- RegularTicket – final price equals base price
+- VipTicket – final price equals base price + VIP fee
+
+### Polymorphism
+Tickets are handled through the base Ticket type.
+At runtime, Java invokes the correct implementation of getFinalPrice().
+
+### Composition / Aggregation
+- Ticket contains a Customer
+- Represented in OOP and database via foreign key relationship
 
 ---
 
-###  Inheritance
+## Interfaces & Advanced Features
 
-Two subclasses extend the Ticket abstract class:
-- RegularTicket – standard ticket with base price
-- VipTicket – ticket with additional VIP fee
+### Interfaces
+- Validatable<T> – enforces validation rules
+- PricedItem – defines price-related behavior
 
-Each subclass overrides abstract methods and provides its own pricing logic.
-
----
-
-###  Polymorphism
-
-Tickets are handled using the base Ticket reference.  
-At runtime, Java calls the correct implementation of getFinalPrice() depending on the ticket type.
+Interface features:
+- Abstract methods
+- Default methods
+- Static helper methods
 
 ---
 
-###  Composition / Aggregation
-
-Each Ticket object contains a Customer object.
-
-Example:
-Ticket → Customer
-
-This demonstrates composition in the domain model.
+## Generics
+Generics are used in repository abstraction:
+- Generic CRUD interface (CrudRepository<T, ID>)
+- Enables reusable and type-safe data access layer
 
 ---
 
-##  Interfaces
+## Lambdas
+Lambda expressions are used for:
+- Sorting tickets by final price
+- Comparator-based logic in utilities
 
-- PricedItem defines price-related behavior for tickets
-- Validatable enforces input validation rules in domain models
+Example usage:
+- Sorting tickets by final price in ascending order
+
 ---
 
-##  Database Design (PostgreSQL)
+## Reflection / RTTI
+A reflection utility demonstrates runtime inspection:
+- Prints class name
+- Lists fields
+- Lists methods
 
-### Tables:
+Demonstrated in Main using ReflectionUtils.inspectObject(...).
+
+---
+
+## Database Design (PostgreSQL)
+
+### Tables
 - customers
 - movies
 - tickets
 
-### Relationships:
+### Relationships
 - tickets.customer_id → customers.customer_id
 - tickets.movie_id → movies.movie_id
 
 ### Tickets Table Schema
-
 sql
 CREATE TABLE tickets (
-    ticket_id SERIAL PRIMARY KEY,
-    customer_id INT REFERENCES customers(customer_id),
-    movie_id INT REFERENCES movies(movie_id),
-    type VARCHAR(20),
-    base_price NUMERIC(8,2),
-    final_price NUMERIC(8,2)
+  ticket_id SERIAL PRIMARY KEY,
+  customer_id INT REFERENCES customers(customer_id),
+  movie_id INT REFERENCES movies(movie_id),
+  type VARCHAR(20),
+  base_price NUMERIC(8,2),
+  final_price NUMERIC(8,2)
 );
 
 
 ---
 
-##  JDBC & Repository Layer
+## Sample Inserts
+sql
+INSERT INTO customers (name)
+VALUES ('Anna'), ('Karima');
 
-- Uses DriverManager for database connection
-- Uses PreparedStatement only (no Statement)
-- Implements CRUD operations for tickets
-- Handles SQL exceptions properly
+INSERT INTO movies (title, duration)
+VALUES ('Inception', 148), ('Interstellar', 169);
+
+INSERT INTO tickets (customer_id, movie_id, type, base_price, final_price)
+VALUES
+(1, 1, 'REGULAR', 2000, 2000),
+(2, 2, 'VIP', 2000, 2500);
+
 
 ---
 
-##  Service Layer (Business Logic)
+## Layered Architecture Explanation
 
-The service layer is responsible for:
+### Controller Layer
+- Responsible for interaction and demonstration only
+- No business logic
+- Delegates all operations to the service layer
+
+### Service Layer
 - Input validation
-- Preventing duplicate tickets
-- Checking foreign key existence
-- Applying business rules before database access
+- Business rules (duplicate prevention, checks)
+- Throws custom exceptions
+- Depends on repository interfaces (DIP)
+
+### Repository Layer
+- JDBC-based data access
+- Implements CRUD operations
+- Uses PreparedStatement only
+- Contains no business logic
+
+### Utilities
+- Sorting utilities (lambdas)
+- Reflection utilities (RTTI)
+- Validation helpers (optional)
 
 ---
 
-##  Exception Handling
-
+## Exception Handling
 Custom exception hierarchy:
 - InvalidInputException
-- DuplicateResourceException
+- DuplicateResourceException extends InvalidInputException
 - ResourceNotFoundException
 - DatabaseOperationException
 
-These exceptions provide meaningful error messages and clean error flow.
+All exceptions are thrown and handled in the service layer.
 
 ---
 
-##  Controller / Main Demonstration
-
-The Main class demonstrates:
+## Application Demonstration (Main)
+The application demonstrates:
 - Creating multiple tickets
 - Retrieving all tickets
 - Retrieving ticket by ID
 - Deleting tickets
-- Handling errors (ticket not found)
+- Triggering validation and not-found exceptions
+- Sorting tickets using lambdas
+- Reflection output
 - Polymorphism in action
-
-All results are printed in the console.
 
 ---
 
-##  Project Structure
-
+## Project Structure
 
 cinema-universe-api/
 ├── src/
 │   ├── controller/
 │   ├── service/
+│   │   ├── interfaces/
 │   ├── repository/
+│   │   ├── interfaces/
 │   ├── model/
 │   ├── exception/
 │   ├── utils/
+│   │   ├── ReflectionUtils.java
+│   │   ├── SortingUtils.java
+│   ├── DatabaseConnection.java
 │   └── Main.java
-├── .gitignore
-├── cinema-universe-api.iml
-└── README.md
+├── docs/
+│   ├── screenshots/
+│   └── uml.png
+├── README.md
+└── .gitignore
 
 
 ---
 
-##  How to Run
-
+## How to Run
 1. Ensure PostgreSQL is running
-2. Update database credentials in DatabaseConnection
-3. Run Main.java
+2. Create database tables using provided SQL
+3. Update database credentials in DatabaseConnection
+4. Run Main.java
 
 ---
 
 ## Screenshots
 
-### 1. Database schema creation
-This screenshot shows the creation of the relational database schema with primary and foreign keys.
-![Database Schema](docs/screenshots/screenshot1.png)
+### CRUD Operations & Sorting (Lambda)
+![CRUD and Sorting](docs/screenshots/sorted_tickets_lambda.png)
 
-### 2. Sample SQL INSERT statements
-This screenshot demonstrates inserting initial data into the database tables.
-![SQL Inserts](docs/screenshots/screenshot2.png)
+### Exception Handling (Service Layer)
+![Exceptions](docs/screenshots/4screen1.png)
 
-### 3. Project structure (multi-layer architecture)
-This screenshot shows the project structure with controller, service, repository, model, exception, and utils layers.
-![Project Structure](docs/screenshots/screenshot9.png)
+### Reflection / RTTI
+![Reflection](docs/screenshots/reflection_output.png)
 
-### 4. Application output and CRUD operations
-This screenshot shows the console output demonstrating CRUD operations, polymorphism, and exception handling.
-![Application Output](docs/screenshots/screenshot10.png)
+---
 
 ## UML Diagram
+![UML Diagram](docs/uml/uml-diagram%20(3).png)
+Includes:
+- Abstract class and subclasses
+- Interfaces
+- Service and repository layers
+- Relationships between entities
 
-![UML Diagram](docs/uml/uml-diagram%20(2).png)
 ---
 
-##  Reflection
-
+## Reflection
 This project helped me understand:
-- Practical usage of abstract classes and inheritance
+- Practical application of SOLID principles
 - Importance of service-layer validation
-- JDBC interaction with relational databases
-- Benefits of multi-layer architecture
-- Proper exception handling strategies
+- Clean separation of responsibilities
+- Usage of generics, lambdas, and reflection
+- Benefits of layered architecture in real projects
 
 ---
 
-##  Conclusion
+## Conclusion
+Cinema Universe API (Assignment 4) is a fully refactored SOLID-based Java application that combines:
+- Advanced OOP design
+- JDBC database integration
+- Clean architecture
+- Strong exception handling
+- Professional documentation
 
-Cinema Universe API is a complete example of a Java application that combines OOP principles, JDBC, database integration, validation logic, and structured exception handling.
+This project demonstrates a complete and maintainable Java API design.
